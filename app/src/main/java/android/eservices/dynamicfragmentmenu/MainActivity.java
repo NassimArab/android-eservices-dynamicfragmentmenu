@@ -1,6 +1,7 @@
 package android.eservices.dynamicfragmentmenu;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,8 +11,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -25,6 +29,8 @@ public class MainActivity extends AppCompatActivity implements NavigationInterfa
     private SelectableNavigationView navigationView;
     private SparseArray<Fragment> fragmentArray;
     private Fragment currentFragment;
+    private Fragment favoriteFragment;
+    private Fragment selectedFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +79,34 @@ public class MainActivity extends AppCompatActivity implements NavigationInterfa
                 //store it the way you prefer, so when you select this menu item later, you first check if the fragment already exists
                 //and then you use it. If the fragment doesn't exist (it is not cached then) you get an instance of it and store it in the cache.
 
+                //Log.e("id : ",menuItem.getTitle()+"");
+
+                switch (menuItem.getItemId()){
+                    case R.id.list:{
+                        if (selectedFragment == null){
+                            selectedFragment = SelectedFragment.newInstance();
+                            currentFragment = selectedFragment;
+                        }else{
+                            currentFragment = selectedFragment;
+                        }
+                        break; }
+                    case R.id.favorites:{
+                        if (favoriteFragment == null){
+                            favoriteFragment = FavoritesFragment.newInstance();
+                            currentFragment = favoriteFragment;
+                        }else{
+                            currentFragment = favoriteFragment;
+                        }
+                        break; }
+                    case R.id.logoff:{
+                        logoff();
+                        }
+                        break;
+
+
+
+                }
+                replaceFragment(currentFragment);
 
                 //TODO when we select logoff, I want the Activity to be closed (and so the Application, as it has only one activity)
 
@@ -80,11 +114,27 @@ public class MainActivity extends AppCompatActivity implements NavigationInterfa
                 return false;
             }
         });
+
+
     }
 
 
     private void replaceFragment(Fragment newFragment) {
         //TODO replace fragment inside R.id.fragment_container using a FragmentTransaction
+
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+
+
+        fragmentManager
+                .beginTransaction()
+                .replace(R.id.fragment_container, newFragment)
+                .commit();
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+
+
+
     }
 
     private void logoff() {
@@ -104,6 +154,7 @@ public class MainActivity extends AppCompatActivity implements NavigationInterfa
         counterView.setVisibility(counter > 0 ? View.VISIBLE : View.GONE);
         ((TextView) counterView.findViewById(R.id.counter_view)).setText(counterContent);
     }
+
 
 
     //TODO saveInstanceState to handle
